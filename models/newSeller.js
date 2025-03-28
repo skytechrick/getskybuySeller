@@ -1,6 +1,12 @@
 import mongoose from "mongoose";
 
 const newSellerSchema = new mongoose.Schema({
+    status: {
+        type: String,
+        default: "",
+        enum: ["","CREATED", "REDIRECTED", "FINISHED",
+            "REJECTED", "NOT_AVAILABLE"],
+    },
     personalDetails:{
         name: {
             type: String,
