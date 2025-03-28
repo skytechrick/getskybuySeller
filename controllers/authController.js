@@ -3,7 +3,7 @@ import newSellerModel from "../models/newSeller.js";
 import { hashPassword } from "../utils/password.js";
 import supportOfficeModel from "../models/supportOffice.js";
 import { sendEmail } from "../utils/sendMail.js";
-import { createToken } from "../utils/jwt.js";
+import { createToken , verifyToken } from "../utils/jwt.js";
 import crypto from "crypto";
 
 export const signup = async ( req , res , next ) => {
@@ -93,6 +93,124 @@ export const signup = async ( req , res , next ) => {
             token: jwtToken,
         });
 
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const signupVerifyOtp = async ( req , res , next ) => {
+    try {
+
+        let otp = req.body.otp;
+
+        if(!otp) {
+            return res.status(400).json({
+                status: "error",
+                message: "OTP is required",
+            });
+        }
+        
+        otp = parseInt(otp, 10);
+
+        const token = req.headers.authorization.split("Bearer ")[1];
+
+        if(!token) {
+            return res.status(401).json({
+                status: "error",
+                message: "Unauthorized",
+            });
+        }
+
+        const decodedToken = verifyToken(token);
+
+        if(!decodedToken) {
+            return res.status(401).json({
+                status: "error",
+                message: "Unauthorized",
+            });
+        }
+
+        if(decodedToken.isOtp !== true) {
+            return res.status(401).json({
+                status: "error",
+                message: "Unauthorized",
+            });
+        }
+
+        const { id , token: deToken } = decodedToken;
+
+        const newSeller = await newSellerModel.findById(id).exec();
+
+        if(!newSeller) {
+            return res.status(404).json({
+                status: "error",
+                message: "New seller not found",
+            });
+        }
+
+        if(newSeller.isCompletedOnboarding) {
+            return res.status(400).json({
+                status: "error",
+                message: "New seller already completed onboarding",
+            });
+        }
+
+        if(newSeller.authentication.token !== deToken) {
+            return res.status(401).json({
+                status: "error",
+                message: "Unauthorized",
+            });
+        }
+
+        if(newSeller.authentication.otpExpiry < Date.now()) {
+            return res.status(400).json({
+                status: "error",
+                message: "OTP expired",
+            });
+        }
+
+        if(newSeller.authentication.otp === null) {
+            return res.status(400).json({
+                status: "error",
+                message: "OTP not sent",
+            });
+        }
+
+        if(newSeller.authentication.otp !== otp) {
+            return res.status(400).json({
+                status: "error",
+                message: "Invalid OTP",
+            });
+        }
+
+        newSeller.authentication = {
+            otp: null,
+            otpExpiry: null,
+            token: null,
+        }
+
+        const newToken = crypto.randomBytes(32).toString("hex");
+
+        newSeller.status = "CREATED";
+        newSeller.loggedIn = {
+            token: newToken,
+            lastLoggedIn: Date.now(),
+            loginAttempts: 0,
+        };
+
+        const jwtToken = createToken({
+            id: newSeller._id,
+            token: newToken,
+        });
+
+        await newSeller.save();
+
+        return res.status(200).json({
+            status: "success",
+            message: "OTP verified successfully",
+            token: jwtToken,
+        });
+        
     } catch (error) {
         next(error);
     }
