@@ -203,6 +203,31 @@ export const signupVerifyOtp = async ( req , res , next ) => {
             token: newToken,
         });
 
+        const isSent = sendEmail({
+            name: "Onboarding Seller",
+            to: email,
+            subject: `Onboarding Account Verified | Complete your onboarding process | GET SKY BUY`,
+            text: `
+                Your onboarding account has been verified successfully.
+                Please complete your onboarding process by logging in to your onboarding account.
+                Use the following credentials to log in:
+                Email: ${newSeller.email}
+                Password: Your password is the same as the one you used to sign up.
+                If you have any questions or need assistance, please feel free to reach out to us.
+                Thank you for choosing GET SKY BUY!
+                Best regards,
+                GET SKY BUY Team
+                GET SKY BUY Support
+            `,
+        });
+
+        if (!isSent) {
+            return res.status(500).json({
+                status: "error",
+                message: "Unable to send OTP. Please try again.",
+            });
+        }
+
         await newSeller.save();
 
         return res.status(200).json({
