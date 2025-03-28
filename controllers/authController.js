@@ -205,7 +205,7 @@ export const signupVerifyOtp = async ( req , res , next ) => {
 
         const isSent = sendEmail({
             name: "Onboarding Seller",
-            to: email,
+            to: newSeller.email,
             subject: `Onboarding Account Verified | Complete your onboarding process | GET SKY BUY`,
             text: `
                 Your onboarding account has been verified successfully.
