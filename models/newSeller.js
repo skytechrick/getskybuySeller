@@ -186,6 +186,55 @@ const newSellerSchema = new mongoose.Schema({
             },
         },
     },
+    pickupAddress: {
+        contactPerson:{
+            name: {
+                type: String,
+                required: false,
+                max: 255,
+                min: 3,
+            },
+            mobileNumber: {
+                type: String,
+                required: false,
+                max: 15,
+            },
+        },
+        address_line: {
+            type: String,
+            required: false,
+            max: 255,
+            min: 3,
+        },
+        pinCode: {
+            type: Number,
+            required: false,
+        },
+        district: {
+            type: String,
+            required: false,
+            max: 255,
+            min: 3,
+        },
+        city: {
+            type: String,
+            required: false,
+            max: 255,
+            min: 3,
+        },
+        state: {
+            type: String,
+            required: false,
+            max: 255,
+            min: 3,
+        },
+        country: {
+            type: String,
+            required: false,
+            max: 255,
+            min: 3,
+        },
+    },
     supportOffice: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "support_office",

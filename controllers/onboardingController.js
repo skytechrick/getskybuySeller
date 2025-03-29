@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import newSeller from "../models/newSeller.js";
 import { profileCompletionSchema , addressSchema , businessInformationSchema ,
-    bankAccountDetailsSchema
+    bankAccountDetailsSchema , pickupAddressDetailsSchema
  } from "../utils/zodSchema.js";
 
 export const onboardingStatus = async ( req , res , next ) => {
@@ -362,7 +362,7 @@ export const bankAccountDetails = async ( req , res , next ) => {
             ifscCode,
             upi,
         };
-        
+
         newSellerData.process.bankDetailsUploaded = true;
 
         await newSellerData.save();
@@ -372,6 +372,64 @@ export const bankAccountDetails = async ( req , res , next ) => {
             message: "Bank account details completed successfully",
         });
 
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const pickupAddressDetails = async ( req , res , next ) => {
+    try {
+
+        const validatedData = pickupAddressDetailsSchema.safeParse(req.body);
+
+        if (!validatedData.success) {
+            return res.status(400).json({
+                status: "failed",
+                message: validatedData.error.issues.map((issue) => issue.message).join(", "),
+            });
+        }
+
+        const { onboarder } = req;
+
+        const newSellerData = await newSeller.findById(onboarder._id);
+
+        if (!newSellerData) {
+            return res.status(404).json({
+                status:"failed",
+                message: "User not found"
+            });
+        }
+
+        if(newSellerData.process.bankDetailsUploaded === false){
+            return res.status(400).json({
+                status:"failed",
+                message: "Please upload your bank details first", 
+            });
+        }
+
+        let address = validatedData.data.address;
+
+        if(validatedData.data.isPickupSameAsBusiness === true){
+            address = newSellerData.businessInfo.address;
+        }
+
+        newSellerData.pickupAddress = {
+            contactPerson: {
+                name: validatedData.data.contactPerson.name,
+                mobileNumber: validatedData.data.contactPerson.mobileNumber,
+            },
+            ...address,
+        };
+
+        newSellerData.process.pickupAddressAdded = true;
+
+        await newSellerData.save();
+
+        res.status(200).json({
+            status: "success",
+            message: "Pickup address details completed successfully",
+        });
+        
     } catch (error) {
         next(error);
     }

@@ -103,3 +103,37 @@ export const bankAccountDetailsSchema = z.object({
         .max(255 , "UPI ID or Number must be at most 255 characters" )
         .optional(),
 });
+
+export const pickupAddressDetailsSchema = z.object({
+    contactPerson: z.object({
+        name: z.string({ required_error: "Contact person name is required" })
+            .min(3, "Contact person name must be at least 3 characters" )
+            .max(255 , "Contact person name must be at most 255 characters" ),
+        mobileNumber: z.string({ required_error: "Contact person mobile number is required" })
+            .min(10, "Contact person mobile number must be 10 digits" )
+            .max(10, "Contact person mobile number must be 10 digits" ),
+    }),
+    isPickupSameAsBusiness: z.boolean()
+        .default(false)
+        .optional(),
+    address: z.object({
+        address_line: z.string({ required_error: "Address line is required" })
+            .min(3, "Address line must be at least 3 characters" )
+            .max(255 , "Address line must be at most 255 characters" ),
+        pinCode: z.string({ required_error: "PIN code is required" })
+            .min(6, "PIN code must be 6 digits" )
+            .max(6, "PIN code must be 6 digits" ),
+        district: z.string({ required_error: "District is required" })
+            .min(3, "District must be at least 3 characters" )
+            .max(255 , "District must be at most 255 characters" ),
+        city: z.string({ required_error: "City is required" })
+            .min(3, "City must be at least 3 characters" )
+            .max(255 , "City must be at most 255 characters" ),
+        state: z.string({ required_error: "State is required" })
+            .min(3, "State must be at least 3 characters" )
+            .max(255 , "State must be at most 255 characters" ),
+        country: z.string({ required_error: "Country is required" })
+            .min(3, "Country must be at least 3 characters" )
+            .max(255 , "Country must be at most 255 characters" ),
+    }).optional(),
+});
