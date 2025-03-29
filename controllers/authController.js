@@ -1,6 +1,6 @@
-import { newSignupSchema } from "../utils/zodSchema.js";
+import { newSignupSchema , loginSchema } from "../utils/zodSchema.js";
 import newSellerModel from "../models/newSeller.js";
-import { hashPassword } from "../utils/password.js";
+import { hashPassword , comparePassword } from "../utils/password.js";
 import supportOfficeModel from "../models/supportOffice.js";
 import { sendEmail } from "../utils/sendMail.js";
 import { createToken , verifyToken } from "../utils/jwt.js";
@@ -233,6 +233,116 @@ export const signupVerifyOtp = async ( req , res , next ) => {
         return res.status(200).json({
             status: "success",
             message: "OTP verified successfully",
+            token: jwtToken,
+        });
+        
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const onboardingLogin = async ( req , res , next ) => {
+    try {
+
+        const validatedData = loginSchema.safeParse(req.body);
+    
+        if (!validatedData.success) {
+            return res.status(400).json({
+                status: "error",
+                message: validatedData.error.issues.map(issue => issue.message).join(", "),
+            });
+        }
+
+        let { email, password } = validatedData.data;
+
+        const newSeller = await newSellerModel.findOne({
+            email: email,
+        }).exec();
+
+        if (!newSeller) {
+            return res.status(404).json({
+                status: "error",
+                message: "New seller not found",
+            });
+        }
+
+        if (newSeller.isCompletedOnboarding) {
+            return res.status(400).json({
+                status: "error",
+                message: "New seller already completed onboarding, login into your seller account",
+            });
+        }
+
+        if(newSeller.status === "") {
+
+            const otp = crypto.randomInt(100000, 999999);
+            const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiry
+            const token = crypto.randomBytes(32).toString("hex");
+
+            newSeller.authentication = {
+                otp,
+                otpExpiry,
+                token,
+            }
+
+            const jwtToken = createToken({
+                id: newSeller._id,
+                token: token,
+                isOtp : true,
+            });
+
+            const isSent = sendEmail({
+                name: "New Seller",
+                to: email,
+                subject: "Onboarding Account Verification | New seller",
+                text: `Your OTP is ${otp}. It is valid for 10 minutes.`,
+            });
+
+            if (!isSent) {
+                return res.status(500).json({
+                    status: "error",
+                    message: "Unable to send OTP. Please try again.",
+                });
+            }
+
+            await newSeller.save();
+
+            return res.status(201).json({
+                status: "success",
+                message: `Onboarding account not verified, OTP sent to your email`,
+                token: jwtToken,
+            });
+        }
+
+        if( comparePassword(password, newSeller.password) === false ) {
+            newSeller.loggedIn.loginAttempts += 1;
+            await newSeller.save();
+            return res.status(401).json({
+                status: "error",
+                message: "Invalid password",
+            });
+        }
+
+        if(newSeller.loggedIn.loginAttempts > 0) {
+            newSeller.loggedIn.loginAttempts = 0;
+        }
+
+        const token = crypto.randomBytes(32).toString("hex");
+        newSeller.loggedIn = {
+            token: token,
+            lastLoggedIn: Date.now(),
+            loginAttempts: 0,
+        }
+
+        const jwtToken = createToken({
+            id: newSeller._id,
+            token: token,
+        });
+
+        await newSeller.save();
+        return res.status(200).json({
+            status: "success",
+            message: "Login successful",
             token: jwtToken,
         });
         

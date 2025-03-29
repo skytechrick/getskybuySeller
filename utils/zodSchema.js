@@ -7,3 +7,13 @@ export const newSignupSchema = z.object({
     mobileNumber: z.string({ required_error: 'Mobile number is required' }).regex(/^\d{10}$/, 'Mobile number must be 10 digits long'),
     password: z.string({ required_error: "Password is required" }).min(8, 'Password must be at least 8 characters long'),
 });
+
+export const loginSchema = z.object({
+    email: z.string({ required_error: "Email is required" })
+        .nonempty("Email cann't be empty")
+        .email("Please enter a correct Email")
+        .transform(v => v.toLowerCase()),
+    password: z.string({ required_error: "Password is required" })
+        .nonempty("password is required")
+        .min(8, "Password must be at least 8 characters")
+});
