@@ -16,18 +16,14 @@ const newSellerSchema = new mongoose.Schema({
             type: Boolean,
             default: false,
         },
-        pickupAddressAdded: {
-            type: Boolean,
-            default: false,
-        },
         bankDetailsUploaded: {
             type: Boolean,
             default: false,
         },
-        documentsUploaded: {
+        pickupAddressAdded: {
             type: Boolean,
             default: false,
-        }
+        },
     },
     personalDetails:{
         name: {
@@ -269,11 +265,11 @@ const newSellerSchema = new mongoose.Schema({
         type: String,
     },
     bankAccount:{
-        bankName: {
+        accountHolderName: {
             type: String,
             default: null,
         },
-        beneficiaryName: {
+        bankName: {
             type: String,
             default: null,
         },
@@ -285,7 +281,7 @@ const newSellerSchema = new mongoose.Schema({
             type: String,
             default: null,
         },
-        passbook: {
+        upi: {
             type: String,
             default: null,
         },

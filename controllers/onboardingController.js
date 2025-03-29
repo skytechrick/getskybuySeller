@@ -1,7 +1,9 @@
 import fs from "fs";
 import path from "path";
 import newSeller from "../models/newSeller.js";
-import { profileCompletionSchema , addressSchema , businessInformationSchema } from "../utils/zodSchema.js";
+import { profileCompletionSchema , addressSchema , businessInformationSchema ,
+    bankAccountDetailsSchema
+ } from "../utils/zodSchema.js";
 
 export const onboardingStatus = async ( req , res , next ) => {
     try {
@@ -312,6 +314,65 @@ export const businessInformation = async ( req , res , next ) => {
             images.map(e => fs.unlinkSync(path.join(process.cwd(), './public/converted-business-images', e)))
         );
             
+        next(error);
+    }
+}
+
+export const bankAccountDetails = async ( req , res , next ) => {
+    try {
+
+        const validatedData = bankAccountDetailsSchema.safeParse(req.body);
+
+        if (!validatedData.success) {
+            return res.status(400).json({
+                status: "failed",
+                message: validatedData.error.issues.map((issue) => issue.message).join(", "),
+            });
+        }
+        const { onboarder } = req;
+
+        const newSellerData = await newSeller.findById(onboarder._id);
+
+        if (!newSellerData) {
+            return res.status(404).json({
+                status:"failed",
+                message: "User not found"
+            });
+        }
+
+        if(newSellerData.process.businessInformation === false){
+            return res.status(400).json({
+                status:"failed",
+                message: "Please complete your business information first", 
+            });
+        }
+
+        const {
+            accountHolderName,
+            bankName,
+            accountNumber,
+            ifscCode,
+            upi = undefined,
+        } = validatedData.data;
+
+        newSellerData.bankAccount = {
+            accountHolderName,
+            bankName,
+            accountNumber,
+            ifscCode,
+            upi,
+        };
+        
+        newSellerData.process.bankDetailsUploaded = true;
+
+        await newSellerData.save();
+
+        res.status(200).json({
+            status: "success",
+            message: "Bank account details completed successfully",
+        });
+
+    } catch (error) {
         next(error);
     }
 }

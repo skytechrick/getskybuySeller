@@ -83,3 +83,23 @@ export const businessInformationSchema = z.object({
         .min(3, "Address must be at least 3 characters" )
         .max(255 , "Address must be at most 255 characters" ),
 });
+
+
+export const bankAccountDetailsSchema = z.object({
+    accountHolderName: z.string({ required_error: "Account holder name is required" })
+        .min(3, "Account holder name must be at least 3 characters" )
+        .max(255 , "Account holder name must be at most 255 characters" ),
+    bankName: z.string({ required_error: "Bank name is required" })
+        .min(3, "Bank name must be at least 3 characters" )
+        .max(255 , "Bank name must be at most 255 characters" ),
+    accountNumber: z.string({ required_error: "Account number is required" })
+        .min(3, "Account number must be at least 3 characters" )
+        .max(255 , "Account number must be at most 255 characters" ),
+    ifscCode: z.string({ required_error: "IFSC code is required" })
+        .min(3, "IFSC code must be at least 3 characters" )
+        .max(255 , "IFSC code must be at most 255 characters" ),
+    upi: z.string()
+        .min(3, "UPI ID or Number must be at least 3 characters" )
+        .max(255 , "UPI ID or Number must be at most 255 characters" )
+        .optional(),
+});
