@@ -434,3 +434,30 @@ export const pickupAddressDetails = async ( req , res , next ) => {
         next(error);
     }
 }
+
+export const accountsDetails = async ( req , res , next ) => {
+    try {
+        
+        const { onboarder } = req;
+
+        const newSellerData = await newSeller.findById(onboarder._id)
+            .select("-__v -password -updatedAt -authentication -loggedIn")
+            .exec();
+
+        if (!newSellerData) {
+            return res.status(404).json({
+                status:"failed",
+                message: "User not found"
+            });
+        }
+
+        res.status(200).json({
+            status: "success",
+            message: "Account details fetched successfully",
+            data: newSellerData,
+        });
+
+    } catch (error) {
+        next(error);
+    }
+}

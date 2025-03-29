@@ -3,7 +3,7 @@ const onboardingRouter = Router();
 export default onboardingRouter;
 
 import { profileCompletion , onboardingStatus , businessInformation ,
-    bankAccountDetails , pickupAddressDetails , 
+    bankAccountDetails , pickupAddressDetails , accountsDetails ,
 } from "../controllers/onboardingController.js";
 import { uploadProfileImage , uploadBusinessImage } from "../middlewares/upload.js";
 import { profileImageProcessMiddleWare , businessImageProcessMiddleWare } from "../middlewares/imageProcessor.js";
@@ -13,3 +13,4 @@ onboardingRouter.post("/process/profile-completion", uploadProfileImage , profil
 onboardingRouter.post("/process/business", uploadBusinessImage , businessImageProcessMiddleWare , businessInformation )
 onboardingRouter.post("/process/bank-account", bankAccountDetails )
 onboardingRouter.post("/process/pickup-address", pickupAddressDetails )
+onboardingRouter.get("/account", accountsDetails )
