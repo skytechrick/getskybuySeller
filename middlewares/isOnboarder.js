@@ -53,6 +53,13 @@ export default async ( req , res , next ) => {
                 message: "Account not verified, login to verify"
             });
         }
+        if(newSellerData.isBan ) {
+            return res.status(403).json({
+                status: "failed",
+                message: "Account is banned, contact support",
+                reason: newSellerData.banReason
+            });
+        }
 
         req.onboarder = newSellerData;
 

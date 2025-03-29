@@ -7,6 +7,10 @@ const newSellerSchema = new mongoose.Schema({
         enum: ["", "CREATED", "SUBMIT", "REDIRECTED", "FINISHED",
             "REJECTED", "NOT_AVAILABLE"],
     },
+    remark: {
+        type: String,
+        default: null,
+    },
     process: {
         profileCompletion: {
             type: Boolean,

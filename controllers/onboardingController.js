@@ -2,8 +2,9 @@ import fs from "fs";
 import path from "path";
 import newSeller from "../models/newSeller.js";
 import { profileCompletionSchema , addressSchema , businessInformationSchema ,
-    bankAccountDetailsSchema , pickupAddressDetailsSchema
- } from "../utils/zodSchema.js";
+        bankAccountDetailsSchema , pickupAddressDetailsSchema
+    } from "../utils/zodSchema.js";
+import { sendEmail } from "../utils/sendMail.js";
 
 export const onboardingStatus = async ( req , res , next ) => {
     try {
@@ -455,6 +456,79 @@ export const accountsDetails = async ( req , res , next ) => {
             status: "success",
             message: "Account details fetched successfully",
             data: newSellerData,
+        });
+
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const submitOnboarding = async ( req , res , next ) => {
+    try {
+
+        const { onboarder } = req;
+
+        const newSellerData = await newSeller.findById(onboarder._id);
+
+        if (!newSellerData) {
+            return res.status(404).json({
+                status:"failed",
+                message: "User not found"
+            });
+        }
+
+        const process = newSellerData.process;
+
+        if(
+            process.profileCompletion === false ||
+            process.businessInformation === false ||
+            process.bankDetailsUploaded === false ||
+            process.pickupAddressAdded === false
+        ){
+            return res.status(400).json({
+                status:"failed",
+                message: "Please complete all the required steps", 
+            });
+        }
+
+        if(newSellerData.status !== "CREATED"){
+            return res.status(400).json({
+                status:"failed",
+                message: "You have already submitted your onboarding request or it is in process",
+            });
+        }
+
+        newSellerData.status = "SUBMIT";
+
+        const isSent = await sendEmail({
+            to: onboarder.email,
+            subject: "Onboarding Request Submitted",
+            text: `
+                Dear ${onboarder.personalDetails.name},
+                
+                Your onboarding request has been submitted successfully.
+                
+                We will review your application and get back to you shortly.
+                If you have any questions, feel free to reach out to us.
+                Thank you for choosing us!
+
+                Thank you,
+                Team
+            `,
+        });
+        
+        if (!isSent) {
+            return res.status(500).json({
+                status: "failed",
+                message: "Error sending email",
+            });
+        }
+
+        await newSellerData.save();
+
+        res.status(200).json({
+            status: "success",
+            message: "Onboarding request submitted successfully",
         });
 
     } catch (error) {
