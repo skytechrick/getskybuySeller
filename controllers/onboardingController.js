@@ -179,13 +179,13 @@ export const businessInformation = async ( req , res , next ) => {
 
         if (processedImages.length !== 0) {
             processedImages.map((image) => {
-                if (image.type === "businessLogo") {
+                if (image.field === "businessLogo") {
                     businessLogo = image.image;
-                } else if (image.type === "shopPhoto") {
+                } else if (image.field === "shopPhoto") {
                     shopPhoto = image.image;
-                } else if (image.type === "panFile") {
+                } else if (image.field === "panFile") {
                     panFile = image.image;
-                } else if (image.type === "aadhaarFile") {
+                } else if (image.field === "aadhaarFile") {
                     aadhaarFile = image.image;
                 }
             });
@@ -256,16 +256,16 @@ export const businessInformation = async ( req , res , next ) => {
             };
         }
         if (businessLogo) {
-            newSellerData.businessInfo.businessLogo = businessLogo.toString();
+            businessLogo = businessLogo.toString();
         }
         if (shopPhoto) {
-            newSellerData.businessInfo.shopPhoto = shopPhoto.toString();
+            shopPhoto = shopPhoto.toString();
         }
         if (panFile) {
-            newSellerData.businessInfo.panFile = panFile.toString();
+            panFile = panFile.toString();
         }
         if (aadhaarFile) {
-            newSellerData.businessInfo.aadhaarFile = aadhaarFile.toString();
+            aadhaarFile = aadhaarFile.toString();
         }
         
 
