@@ -192,6 +192,7 @@ export const signupVerifyOtp = async ( req , res , next ) => {
         const newToken = crypto.randomBytes(32).toString("hex");
 
         newSeller.status = "CREATED";
+        newSeller.isVerified = true;
         newSeller.loggedIn = {
             token: newToken,
             lastLoggedIn: Date.now(),
@@ -274,7 +275,7 @@ export const onboardingLogin = async ( req , res , next ) => {
             });
         }
 
-        if(newSeller.status === "") {
+        if(newSeller.status === "" || newSeller.isVerified === false) {
 
             const otp = crypto.randomInt(100000, 999999);
             const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiry

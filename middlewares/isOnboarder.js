@@ -46,6 +46,13 @@ export default async ( req , res , next ) => {
                 message: "Unauthorized"
             });
         }
+        
+        if(!newSellerData.isVerified ) {
+            return res.status(403).json({
+                status: "failed",
+                message: "Account not verified, login to verify"
+            });
+        }
 
         req.onboarder = newSellerData;
 

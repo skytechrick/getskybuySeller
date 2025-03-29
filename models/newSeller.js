@@ -86,41 +86,120 @@ const newSellerSchema = new mongoose.Schema({
         default: false,
     },
     businessInfo:{
-        shopName: {
+        businessMobileNumber: {
+            type: String,
+            required: false,
+            default: null,
+        },
+        name: {
             type: String,
             required: false,
             max: 255,
+            default: null,
             min: 4,
         },
-        shopAddress: {
+        type: {
             type: String,
             required: false,
+            default: null,
             max: 255,
             min: 4,
         },
-        shopContact: {
-            type: Number,
-            required: false,
-        },
-    },
-    documents:{
-        panId:{
+        description: {
             type: String,
             required: false,
+            default: null,
+            max: 500,
+            min: 4,
         },
-        aadhaarId:{
+        gstin: {
             type: String,
             required: false,
+            default: null,
+            max: 15,
+            min: 4,
+        },
+        panCard: {
+            type: String,
+            required: false,
+            default: null,
+            max: 10,
+            min: 4,
+        },
+        aadhaarCard: {
+            type: String,
+            required: false,
+            default: null,
+            max: 12,
+            min: 4,
+        },
+        panFile: {
+            type: String,
+            required: false,
+            default: null,
+        },
+        aadhaarFile: {
+            type: String,
+            required: false,
+            default: null,
+        },
+        businessLogo: {
+            type: String,
+            required: false,
+            default: null,
+        },
+        shopPhoto: {
+            type: String,
+            required: false,
+            default: null,
+        },
+        address: {
+            address_line: {
+                type: String,
+                required: false,
+                max: 255,
+                min: 3,
+            },
+            pinCode: {
+                type: Number,
+                required: false,
+            },
+            district: {
+                type: String,
+                required: false,
+                max: 255,
+                min: 3,
+            },
+            city: {
+                type: String,
+                required: false,
+                max: 255,
+                min: 3,
+            },
+            state: {
+                type: String,
+                required: false,
+                max: 255,
+                min: 3,
+            },
+            country: {
+                type: String,
+                required: false,
+                max: 255,
+                min: 3,
+            },
         },
     },
     supportOffice: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "support_office",
     },
-    categories: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "category",
-    }],
+    categories: {
+        type: String,
+        default: null,
+        min: 3,
+        max: 255,
+    },
     address: {
         address_line: {
             type: String,

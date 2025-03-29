@@ -33,21 +33,53 @@ export const profileCompletionSchema = z.object({
 
 export const addressSchema = z.object({
     address_line: z.string({ required_error: "Address line is required" })
-            .min(3, "Address line must be at least 3 characters" )
-            .max(255 , "Address line must be at most 255 characters" ),
-        pinCode: z.string({ required_error: "PIN code is required" })
-            .max(6, "PIN code must be 6 characters" )
-            .min(6, "PIN code must be 6 characters" ),
-        district: z.string({ required_error: "District is required" })
-            .min(3, "District must be at least 3 characters" )
-            .max(255 , "District must be at most 255 characters" ),
-        city: z.string({ required_error: "City is required" })
-            .min(3, "City must be at least 3 characters" )
-            .max(255 , "City must be at most 255 characters" ),
-        state: z.string({ required_error: "State is required" })
-            .min(3, "State must be at least 3 characters" )
-            .max(255 , "State must be at most 255 characters" ),
-        country: z.string({ required_error: "Country is required" })
-            .min(3, "Country must be at least 3 characters" )
-            .max(255 , "Country must be at most 255 characters" ),
+        .min(3, "Address line must be at least 3 characters" )
+        .max(255 , "Address line must be at most 255 characters" ),
+    pinCode: z.string({ required_error: "PIN code is required" })
+        .max(6, "PIN code must be 6 characters" )
+        .min(6, "PIN code must be 6 characters" ),
+    district: z.string({ required_error: "District is required" })
+        .min(3, "District must be at least 3 characters" )
+        .max(255 , "District must be at most 255 characters" ),
+    city: z.string({ required_error: "City is required" })
+        .min(3, "City must be at least 3 characters" )
+        .max(255 , "City must be at most 255 characters" ),
+    state: z.string({ required_error: "State is required" })
+        .min(3, "State must be at least 3 characters" )
+        .max(255 , "State must be at most 255 characters" ),
+    country: z.string({ required_error: "Country is required" })
+        .min(3, "Country must be at least 3 characters" )
+        .max(255 , "Country must be at most 255 characters" ),
 })
+
+export const businessInformationSchema = z.object({
+    businessMobileNumber: z.string()
+        .min(10, "Enter correct business mobile number")
+        .max(10, "Enter correct business mobile number")
+        .optional(),
+    businessName: z.string({ required_error: "Business name is required" })
+        .min(3, "Business name must be at least 3 characters" )
+        .max(255 , "Business name must be at most 255 characters" ),
+    businessType: z.string({ required_error: "Business type is required" })
+        .min(3, "Business type must be at least 3 characters" )
+        .max(255 , "Business type must be at most 255 characters" ),
+    description: z.string({ required_error: "Description is required" })
+        .min(3, "Description must be at least 3 characters" )
+        .max(500 , "Description must be at most 500 characters" ),
+    gstin: z.string()
+        .min(15, "GSTIN must be 15 characters" )
+        .max(15, "GSTIN must be 15 characters" )
+        .optional(),
+    aadhaarCard: z.string()
+        .min(12, "Aadhaar card number must be 12 characters" )
+        .max(12, "Aadhaar card number must be 12 characters" )
+        .optional(),
+    panCard: z.string()
+        .min(10, "PAN card number must be 10 characters" )
+        .max(10, "PAN card number must be 10 characters" )
+        .optional(),
+    address: z.string({ required_error: "Address is required" }),
+    categories: z.string({ required_error: "Categories are required" })
+        .min(3, "Address must be at least 3 characters" )
+        .max(255 , "Address must be at most 255 characters" ),
+});

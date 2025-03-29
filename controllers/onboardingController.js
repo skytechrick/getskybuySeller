@@ -1,6 +1,7 @@
 import fs from "fs";
+import path from "path";
 import newSeller from "../models/newSeller.js";
-import { profileCompletionSchema , addressSchema } from "../utils/zodSchema.js";
+import { profileCompletionSchema , addressSchema , businessInformationSchema } from "../utils/zodSchema.js";
 
 export const onboardingStatus = async ( req , res , next ) => {
     try {
@@ -104,6 +105,213 @@ export const profileCompletion = async ( req , res , next ) => {
         });
 
     } catch (error) {
+        next(error);
+    }
+}
+
+export const businessInformation = async ( req , res , next ) => {
+    try {
+
+        const deleteFiles = async () => {
+            const images = req.processedImages.map(e=> e.image);
+            
+            await Promise.all(
+                images.map(e => fs.unlinkSync(path.join(process.cwd(), './public/converted-business-images', e)))
+            );
+        };
+
+        const validatedData = businessInformationSchema.safeParse(req.body);
+
+        if (!validatedData.success) {
+            await deleteFiles();
+            return res.status(400).json({
+                status: "failed",
+                message: validatedData.error.issues.map((issue) => issue.message).join(", "),
+            });
+        }
+
+        validatedData.data.address = JSON.parse(validatedData.data.address);
+
+        const addressValidatedData = addressSchema.safeParse(validatedData.data.address);
+        if (!addressValidatedData.success) {
+            await deleteFiles();
+            return res.status(400).json({
+                status: "failed",
+                message: "Address:" + addressValidatedData.error.issues.map((issue) => issue.message).join(", "),
+            });
+        }
+
+        const { onboarder } = req;
+
+
+        const newSellerData = await newSeller.findById(onboarder._id);
+
+        if (!newSellerData) {
+
+            await deleteFiles();
+            return res.status(404).json({
+                status:"failed",
+                message: "User not found"
+            });
+        }
+
+        if(newSellerData.process.profileCompletion === false){
+            await deleteFiles();
+            return res.status(400).json({
+                status:"failed",
+                message: "Please complete your profile first", 
+            });
+        }
+
+        const processedImages = req.processedImages || [];
+
+        let businessLogo = undefined;
+        let shopPhoto = undefined;
+        let panFile = undefined;
+        let aadhaarFile = undefined;
+        if(processedImages.length < 3){
+            await deleteFiles();
+            return res.status(400).json({
+                status: "failed",
+                message: "Please upload all required files",
+            });
+        }
+
+        if (processedImages.length !== 0) {
+            processedImages.map((image) => {
+                if (image.type === "businessLogo") {
+                    businessLogo = image.image;
+                } else if (image.type === "shopPhoto") {
+                    shopPhoto = image.image;
+                } else if (image.type === "panFile") {
+                    panFile = image.image;
+                } else if (image.type === "aadhaarFile") {
+                    aadhaarFile = image.image;
+                }
+            });
+        }
+
+        const checkExistingBusinessLogo = newSellerData.businessInfo.businessLogo;
+        const checkExistingShopPhoto = newSellerData.businessInfo.shopPhoto;
+        const checkExistingPanFile = newSellerData.businessInfo.panFile;
+        const checkExistingAadhaarFile = newSellerData.businessInfo.aadhaarFile;
+        if (checkExistingBusinessLogo && businessLogo) {
+            const filePath = `./public/converted-business-images/${checkExistingBusinessLogo}`;
+
+            try {
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                }
+            } catch (error) {
+                await deleteFiles();
+                return res.status(500).json({
+                    status: "failed",
+                    message: "Error deleting old business logo",
+                });
+            };
+        }
+        if (checkExistingShopPhoto && shopPhoto) {
+            const filePath = `./public/converted-business-images/${checkExistingShopPhoto}`;
+
+            try {
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                }
+            } catch (error) {
+                await deleteFiles();
+                return res.status(500).json({
+                    status: "failed",
+                    message: "Error deleting old shop photo",
+                });
+            };
+        }
+        if (checkExistingPanFile && panFile) {
+            const filePath = `./public/converted-business-images/${checkExistingPanFile}`;
+
+            try {
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                }
+            } catch (error) {
+                await deleteFiles();
+                return res.status(500).json({
+                    status: "failed",
+                    message: "Error deleting old pan file",
+                });
+            };
+        }
+        if (checkExistingAadhaarFile && aadhaarFile) {
+            const filePath = `./public/converted-business-images/${checkExistingAadhaarFile}`;
+
+            try {
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                }
+            } catch (error) {
+                await deleteFiles();
+                return res.status(500).json({
+                    status: "failed",
+                    message: "Error deleting old aadhaar file",
+                });
+            };
+        }
+        if (businessLogo) {
+            newSellerData.businessInfo.businessLogo = businessLogo.toString();
+        }
+        if (shopPhoto) {
+            newSellerData.businessInfo.shopPhoto = shopPhoto.toString();
+        }
+        if (panFile) {
+            newSellerData.businessInfo.panFile = panFile.toString();
+        }
+        if (aadhaarFile) {
+            newSellerData.businessInfo.aadhaarFile = aadhaarFile.toString();
+        }
+        
+
+        const {
+            businessName,
+            businessType,
+            gstin,
+            panCard,
+            aadhaarCard,
+            description,
+            businessMobileNumber,
+            categories,
+        } = validatedData.data;
+
+        newSellerData.categories = categories,
+        newSellerData.businessInfo = {
+            businessMobileNumber,
+            name: businessName,
+            type: businessType,
+            description,
+            gstin: gstin,
+            panCard,
+            aadhaarCard,
+            panFile,
+            aadhaarFile,
+            businessLogo,
+            shopPhoto,
+            address: addressValidatedData.data,
+        };
+
+        newSellerData.process.businessInformation = true;
+
+        await newSellerData.save();
+
+        res.status(200).json({
+            status: "success",
+            message: "Business information completed successfully",
+        });
+
+    } catch (error) {
+
+        const images = req.processedImages.map(e=> e.image);
+        await Promise.all(
+            images.map(e => fs.unlinkSync(path.join(process.cwd(), './public/converted-business-images', e)))
+        );
+            
         next(error);
     }
 }
