@@ -4,8 +4,30 @@ const newSellerSchema = new mongoose.Schema({
     status: {
         type: String,
         default: "",
-        enum: ["","CREATED", "REDIRECTED", "FINISHED",
+        enum: ["", "CREATED", "SUBMIT", "REDIRECTED", "FINISHED",
             "REJECTED", "NOT_AVAILABLE"],
+    },
+    process: {
+        profileCompletion: {
+            type: Boolean,
+            default: false,
+        },
+        businessInformation: {
+            type: Boolean,
+            default: false,
+        },
+        pickupAddressAdded: {
+            type: Boolean,
+            default: false,
+        },
+        bankDetailsUploaded: {
+            type: Boolean,
+            default: false,
+        },
+        documentsUploaded: {
+            type: Boolean,
+            default: false,
+        }
     },
     personalDetails:{
         name: {
@@ -63,7 +85,7 @@ const newSellerSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
-    shopDetails:{
+    businessInfo:{
         shopName: {
             type: String,
             required: false,

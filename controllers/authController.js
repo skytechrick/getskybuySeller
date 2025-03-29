@@ -201,6 +201,7 @@ export const signupVerifyOtp = async ( req , res , next ) => {
         const jwtToken = createToken({
             id: newSeller._id,
             token: newToken,
+            isOnboarding: true,
         });
 
         const isSent = sendEmail({
@@ -337,6 +338,7 @@ export const onboardingLogin = async ( req , res , next ) => {
         const jwtToken = createToken({
             id: newSeller._id,
             token: token,
+            isOnboarding: true,
         });
 
         await newSeller.save();

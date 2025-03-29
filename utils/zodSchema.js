@@ -17,3 +17,37 @@ export const loginSchema = z.object({
         .nonempty("password is required")
         .min(8, "Password must be at least 8 characters")
 });
+
+export const profileCompletionSchema = z.object({
+    altMobileNumber: z.string()
+        .min(10, "Enter correct alt. mobile number")
+        .max(10, "Enter correct alt. mobile number")
+        .optional(),
+    dob: z.string({ required_error: "Date of Birth is required" })
+        .max(100, "Date of Birth must be in the format YYYY-MM-DD"),
+    gender: z.string({ required_error: "Gender is required" })
+        .min(4, "Enter corrent gender")
+        .max(6, "Enter correct gender"),
+    address: z.string({ required_error: "Address is required" })
+});
+
+export const addressSchema = z.object({
+    address_line: z.string({ required_error: "Address line is required" })
+            .min(3, "Address line must be at least 3 characters" )
+            .max(255 , "Address line must be at most 255 characters" ),
+        pinCode: z.string({ required_error: "PIN code is required" })
+            .max(6, "PIN code must be 6 characters" )
+            .min(6, "PIN code must be 6 characters" ),
+        district: z.string({ required_error: "District is required" })
+            .min(3, "District must be at least 3 characters" )
+            .max(255 , "District must be at most 255 characters" ),
+        city: z.string({ required_error: "City is required" })
+            .min(3, "City must be at least 3 characters" )
+            .max(255 , "City must be at most 255 characters" ),
+        state: z.string({ required_error: "State is required" })
+            .min(3, "State must be at least 3 characters" )
+            .max(255 , "State must be at most 255 characters" ),
+        country: z.string({ required_error: "Country is required" })
+            .min(3, "Country must be at least 3 characters" )
+            .max(255 , "Country must be at most 255 characters" ),
+})
