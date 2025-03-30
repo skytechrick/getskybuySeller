@@ -4,7 +4,7 @@ const newSellerSchema = new mongoose.Schema({
     status: {
         type: String,
         default: "",
-        enum: ["", "CREATED", "SUBMIT", "REDIRECTED", "FINISHED",
+        enum: ["", "CREATED", "SUBMIT", "SELECTED" ,"REDIRECTED", "APPROVED",
             "REJECTED", "NOT_AVAILABLE"],
     },
     remark: {
@@ -73,6 +73,15 @@ const newSellerSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
+    onboardingCompletedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "regional_officer",
+        default: null,
+    },
+    onboardingCompletedAt: {
+        type: Date,
+        default: null,
+    },
     isBan: {
         type: Boolean,
         default: false,
@@ -85,7 +94,7 @@ const newSellerSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
-    businessInfo:{
+    businessInfo: {
         businessMobileNumber: {
             type: String,
             required: false,
@@ -249,6 +258,10 @@ const newSellerSchema = new mongoose.Schema({
         min: 3,
         max: 255,
     },
+    selectedCategories: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "category",
+    }],
     address: {
         address_line: {
             type: String,

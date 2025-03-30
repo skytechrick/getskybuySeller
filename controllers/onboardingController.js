@@ -67,7 +67,6 @@ export const profileCompletion = async ( req , res , next ) => {
         }
 
         const {
-            address,
             altMobileNumber = undefined,
             dob,
             gender
@@ -98,11 +97,10 @@ export const profileCompletion = async ( req , res , next ) => {
         newSellerData.personalDetails.altMobileNumber = altMobileNumber;
         newSellerData.personalDetails.dob = dob;
         newSellerData.personalDetails.gender = gender;
-        newSellerData.personalDetails.address = address;
+        newSellerData.address = addressValidatedData.data;
 
-        await newSellerData.save();
 
-        res.status(200).json({
+        return res.status(200).json({
             status: "success",
             message: "Profile completed successfully",
         });
