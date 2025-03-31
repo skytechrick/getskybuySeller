@@ -183,3 +183,94 @@ export const businessImageProcessMiddleWare = async ( req , res , next ) => {
         next(error);
     };
 };
+
+const processProductImage = async (fileName) => {
+    try {
+        const inputPath = path.join(process.cwd(), './public/product-images', fileName);
+        const outputFilePath = path.join(process.cwd(), './public/converted-product-images', `${path.parse(fileName).name}-${Date.now()}-saved.webp`);
+
+        let image = sharp(inputPath);
+        const metaData = await image.metadata();
+        const maxSize = Math.max(metaData.width, metaData.height, 800);
+        const quality = metaData.width * metaData.height > 2000000 ? 89 : 95;
+
+        await image
+            .resize({
+                width: maxSize,
+                height: maxSize,
+                fit: 'contain',
+                background: {
+                    r: 255,
+                    g: 255,
+                    b: 255,
+                    alpha: 1
+                },
+            })
+            .flatten({
+                background: {
+                    r: 255,
+                    g: 255,
+                    b: 255,
+                    alpha: 1
+                },
+            }).toFormat('webp', {
+                quality
+            }).toFile(outputFilePath)
+            
+            image = null;
+            sharp.cache(false);
+        return path.basename(outputFilePath);
+    } catch (error) {
+        throw error;
+    };
+};
+
+export const productImageProcessMiddleWare = async ( req , res , next ) => {
+    const processedImages = [];
+
+    try {
+        if (!req.files) {
+            next();
+        };
+        
+        const files = req.files;
+        const imageProcessingPromises = [];
+
+        for (let i = 1; i <= 7; i++) {
+            const imageField = `image${i}`;
+
+            if (files[imageField] && files[imageField][0]) {
+                const fileName = files[imageField][0].filename;
+
+                imageProcessingPromises.push(
+                    processProductImage(fileName).then((processedImage) => {
+                        processedImages.push({
+                            field: imageField,
+                            image: processedImage,
+                        });
+                    })
+                );
+            };
+        };
+
+        await Promise.all(imageProcessingPromises);
+
+        for (let i = 1; i <= 7; i++) {
+            const imageField = `image${i}`;
+
+            if (files[imageField] && files[imageField][0]) {
+                fs.unlinkSync(path.join(process.cwd(), './public/product-images', files[imageField][0].filename));
+            };
+        };
+        
+        req.processedImages = processedImages;
+        next();
+    } catch (error) {
+        // req.isProductImageUploaded = true;
+        // req.deleteFiles = req.files;
+        // req.convertedImages = processedImages;
+        next(error);
+    };
+};
+
+

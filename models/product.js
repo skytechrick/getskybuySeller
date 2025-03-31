@@ -18,10 +18,6 @@ const productSchema = new mongoose.Schema({
         min: 3,
         max: 5000,
     },
-    isInstant: {
-        type: Boolean,
-        default: false,
-    },
     variants: [{
         option: {
             type: String,
@@ -44,9 +40,17 @@ const productSchema = new mongoose.Schema({
                 type: Number,
                 required: true,
             },
+            deliveryCharge: {
+                type: Number,
+                default: 0,
+            },
             localPrice: {
                 type: Number,
                 required: true,
+            },
+            localDeliveryCharge: {
+                type: Number,
+                default: 0,
             },
         },
     }],
@@ -76,9 +80,10 @@ const productSchema = new mongoose.Schema({
     },
     gsbCoins: {
         type: Number,
-        default: 0,
+        default: 1,
         max: 30,
     },
+
     isCodAvailable: {
         type: Boolean,
         default: false,
@@ -91,37 +96,24 @@ const productSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
-
-    isLocalFreeDelivery: {
+    isDefaultDelivery: {
         type: Boolean,
         default: false,
     },
-    localDeliveryCharge: {
-        type: Number,
-        default: 0,
-    },
-
-    isFreeDelivery: {
+    isLocalDelivery: {
         type: Boolean,
         default: false,
     },
-    deliveryCharge: {
-        type: Number,
-        default: 0,
-    },
 
-    isAvailable: {
-        type: Boolean,
-        default: true,
-    },
     isVerifiedByAssistant: {
         type: Boolean,
         default: false,
     },
-    isVerified: {
+    isAvailable: {
         type: Boolean,
-        default: false,
+        default: true,
     },
+
     media: {
         images: {
             type: Array,

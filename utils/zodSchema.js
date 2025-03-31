@@ -137,3 +137,16 @@ export const pickupAddressDetailsSchema = z.object({
             .max(255 , "Country must be at most 255 characters" ),
     }).optional(),
 });
+
+export const createProductSchema = z.object({
+    title: z.string().min(3).max(255),
+    description: z.string().min(3).max(5000),
+    keywords: z.string().min(3).max(255),
+    gender: z.string().min(3).max(255),
+    ageGroup: z.string().min(3).max(255),
+    category: z.string().min(3).max(255),
+    subCategory: z.string().min(3).max(255),
+    variants: z.string(),
+    specificationTable: z.string(),
+    videos: z.string().optional(),
+})
