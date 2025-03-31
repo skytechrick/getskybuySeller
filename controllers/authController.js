@@ -1,5 +1,6 @@
 import { newSignupSchema , loginSchema } from "../utils/zodSchema.js";
 import newSellerModel from "../models/newSeller.js";
+import seller from "../models/seller.js";
 import { hashPassword , comparePassword } from "../utils/password.js";
 import supportOfficeModel from "../models/supportOffice.js";
 import { sendEmail } from "../utils/sendMail.js";
@@ -349,6 +350,221 @@ export const onboardingLogin = async ( req , res , next ) => {
             token: jwtToken,
         });
         
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const login = async ( req , res , next ) => {
+    try {
+
+        const validatedData = loginSchema.safeParse(req.body);
+
+        if (!validatedData.success) {
+            return res.status(400).json({
+                status: "error",
+                message: validatedData.error.issues.map(issue => issue.message).join(", "),
+            });
+        }
+
+        let { email, password } = validatedData.data;
+
+        const existingSeller = await seller.findOne({
+            email: email,
+        }).exec();
+        
+        if (!existingSeller) {
+            return res.status(404).json({
+                status: "error",
+                message: "Seller not found",
+            });
+        }
+
+        if (existingSeller.isBan) {
+            return res.status(403).json({
+                status: "error",
+                message: "Seller account is banned",
+            });
+        }
+
+        if (!await comparePassword(password, existingSeller.password)) {
+            existingSeller.loggedIn.loginAttempts += 1;
+            await existingSeller.save();
+            return res.status(401).json({
+                status: "error",
+                message: "Invalid password",
+            });
+        }
+        
+        if (existingSeller.isTwoFactorEnabled){
+            const otp = crypto.randomInt(100000, 999999);
+            const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiry
+            const token = crypto.randomBytes(32).toString("hex");
+
+            existingSeller.authentication = {
+                otp,
+                otpExpiry,
+                token,
+            }
+
+            const jwtToken = createToken({
+                id: existingSeller._id,
+                token: token,
+                isOtp : true,
+            });
+
+            const isSent = sendEmail({
+                name: "Seller",
+                to: email,
+                subject: "Login OTP | GET SKY BUY",
+                text: `Your OTP is ${otp}. It is valid for 10 minutes.`,
+            });
+
+            if (!isSent) {
+                return res.status(500).json({
+                    status: "error",
+                    message: "Unable to send OTP. Please try again.",
+                });
+            }
+
+            await existingSeller.save();
+
+            return res.status(201).json({
+                status: "success",
+                message: `Login OTP sent to your email`,
+                token: jwtToken,
+            });
+        }
+
+        const token = crypto.randomBytes(32).toString("hex");
+        existingSeller.loggedIn = {
+            token: token,
+            lastLoggedIn: Date.now(),
+            loginAttempts: 0,
+        }
+        const jwtToken = createToken({
+            id: existingSeller._id,
+            token: token,
+        });
+
+        await existingSeller.save();
+
+        return res.status(200).json({
+            status: "success",
+            message: "Login successful",
+            token: jwtToken,
+        });
+
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const loginVerifyOtp = async ( req , res , next ) => {
+    try {
+
+        let otp = req.body.otp;
+
+        if(!otp) {
+            return res.status(400).json({
+                status: "error",
+                message: "OTP is required",
+            });
+        }
+        
+        otp = parseInt(otp, 10);
+
+        const token = req.headers.authorization.split("Bearer ")[1];
+
+        if(!token) {
+            return res.status(401).json({
+                status: "error",
+                message: "Unauthorized",
+            });
+        }
+
+        const decodedToken = verifyToken(token);
+
+        if(!decodedToken) {
+            return res.status(401).json({
+                status: "error",
+                message: "Unauthorized",
+            });
+        }
+
+        if(decodedToken.isOtp !== true) {
+            return res.status(401).json({
+                status: "error",
+                message: "Unauthorized",
+            });
+        }
+
+        const { id , token: deToken } = decodedToken;
+
+        const existingSeller = await seller.findById(id).exec();
+
+        if(!existingSeller) {
+            return res.status(404).json({
+                status: "error",
+                message: "Seller not found",
+            });
+        }
+
+        if(existingSeller.authentication.token !== deToken) {
+            return res.status(401).json({
+                status: "error",
+                message: "Unauthorized",
+            });
+        }
+
+        if(existingSeller.authentication.otpExpiry < Date.now()) {
+            return res.status(400).json({
+                status: "error",
+                message: "OTP expired",
+            });
+        }
+
+        if(existingSeller.authentication.otp === null) {
+            return res.status(400).json({
+                status: "error",
+                message: "OTP not sent",
+            });
+        }
+
+        if(existingSeller.authentication.otp !== otp) {
+            return res.status(400).json({
+                status: "error",
+                message: "Invalid OTP",
+            });
+        }
+
+        existingSeller.authentication = {
+            otp: null,
+            otpExpiry: null,
+            token: null,
+        }
+
+        const newToken = crypto.randomBytes(32).toString("hex");
+
+        existingSeller.loggedIn = {
+            token: newToken,
+            lastLoggedIn: Date.now(),
+            loginAttempts: 0,
+        }
+
+        const jwtToken = createToken({
+            id: existingSeller._id,
+            token: newToken,
+        });
+
+        await existingSeller.save();
+
+        return res.status(200).json({
+            status: "success",
+            message: "OTP verified successfully",
+            token: jwtToken,
+        });
+
     } catch (error) {
         next(error);
     }
