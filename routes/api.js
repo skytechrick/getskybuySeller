@@ -7,7 +7,9 @@ import productRouter from './productRouter.js';
 import onboardingRouter from './onboardingRouter.js';
 import isOnboarder from '../middlewares/isOnboarder.js';
 import isSeller from '../middlewares/isSeller.js';
+import workspaceRouter from './workspaceRouter.js';
 
 api.use("/auth", authRouter);
 api.use("/onboarding", isOnboarder , onboardingRouter);
 api.use("/product", isSeller , productRouter);
+api.use("/workspace" , workspaceRouter );
