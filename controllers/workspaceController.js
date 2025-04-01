@@ -111,9 +111,6 @@ export const deleteProductImageForSupportAssistant = async ( req , res , next ) 
             });
         }
         productData.media.images = productData.media.images.filter(e => e !== image);
-        productData.isSubmited = true;
-        productData.isVerifiedByAssistant = false;
-        productData.isAvailable = false;
         
         try {
             fs.unlinkSync(path.join(process.cwd(), './public/converted-product-images', image));
