@@ -150,3 +150,14 @@ export const createProductSchema = z.object({
     specificationTable: z.string(),
     videos: z.string().optional(),
 })
+
+
+export const updateProductSchema = z.object({
+    title: z.string().optional(),
+    description: z.string().optional(),
+    specificationTable: z.array().optional(),
+    keywords: z.string().optional(),
+    gender: z.string().optional(),
+    keywords: z.string().optional(),
+    videos: z.array().optional(),
+})

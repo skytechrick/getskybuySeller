@@ -1,4 +1,4 @@
-import { createProductSchema } from "../utils/zodSchema.js";
+import { createProductSchema , updateProductSchema } from "../utils/zodSchema.js";
 import { productPricing } from "../utils/productPricing.js";
 import product from "../models/product.js";
 import category from "../models/category.js";
@@ -224,6 +224,7 @@ export const getAllProducts = async ( req , res , next ) => {
             page = 1,
             limit = 10,
         } = req.query;
+
         const pageNumber = parseInt(page);
         const limitNumber = parseInt(limit);
         const skip = (pageNumber - 1) * limitNumber;
@@ -302,6 +303,105 @@ export const productSubmit = async ( req , res , next ) => {
             message: "Product submitted for review successfully",
         });
         
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const updateProduct = async ( req , res , next ) => {
+    try {
+
+        const { sellerData } = req;
+        const { id } = req.params;
+
+        const productData = await product.findOne({
+            _id: id,
+            seller: sellerData._id,
+        }).exec();
+
+        if (!productData) {
+            return res.status(404).json({
+                status: "fail",
+                message: "Product not found or already verified",
+            });
+        }
+
+        const validatedData = updateProductSchema.safeParse(req.body);
+
+        if (!validatedData.success) {
+            return res.status(400).json({
+                status: "fail",
+                message: validatedData.error.issue.map(( issue ) => issue.message ).join(", "),
+            });
+        }
+
+        const data = validatedData.data;
+
+        let isUpdated = false;
+        let updatedData = [];
+
+        if(data.title && data.title !== productData.title) {
+            productData.title = data.title;
+            isUpdated = true;
+            updatedData.push("title");
+        }
+
+        if(data.description && data.description !== productData.description) {
+            productData.description = data.description;
+            isUpdated = true;
+            updatedData.push("description");
+        }
+
+        if(data.specificationTable && data.specificationTable !== productData.specificationTable) {
+            productData.specificationTable = data.specificationTable;
+            isUpdated = true;
+            updatedData.push("specificationTable");
+        }
+
+        if(data.keywords && data.keywords !== productData.keywords) {
+            productData.keywords = data.keywords;
+            isUpdated = true;
+            updatedData.push("keywords");
+        }
+
+        if(data.gender && data.gender !== productData.gender) {
+            productData.gender = data.gender;
+            isUpdated = true;
+            updatedData.push("gender");
+        }
+
+        if(data.category && data.category !== productData.category) {
+            productData.category = data.category;
+            isUpdated = true;
+            updatedData.push("category");
+        }
+
+        if(data.subCategory && data.subCategory !== productData.subCategory) {
+            productData.subCategory = data.subCategory;
+            isUpdated = true;
+            updatedData.push("subCategory");
+        }
+
+        if(data.videos && data.videos !== productData.media.videos) {
+            productData.media.videos = data.videos;
+            isUpdated = true;
+            updatedData.push("videos");
+        }
+
+        if(isUpdated) {
+            productData.isSubmited = true;
+            productData.isVerifiedByAssistant = false;
+            productData.isAvailable =false;
+            
+            await productData.save();
+        }
+
+        return res.status(200).json({
+            status: "success",
+            message: "Product updated successfully",
+            data: updatedData,
+        });
+
     } catch (error) {
         next(error);
     }
