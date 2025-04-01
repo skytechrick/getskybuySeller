@@ -530,6 +530,6 @@ export const updateProductDeleteImage = async ( req , res , next ) => {
         });
         
     } catch (error) {
-        
+        next(error);
     }
 }
