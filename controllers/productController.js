@@ -216,3 +216,56 @@ export const createProduct = async ( req , res , next ) => {
         next(error);
     }
 }
+
+export const getAllProducts = async ( req , res , next ) => {
+    try {
+
+        const {
+            page = 1,
+            limit = 10,
+        } = req.query;
+        const pageNumber = parseInt(page);
+        const limitNumber = parseInt(limit);
+        const skip = (pageNumber - 1) * limitNumber;
+        const totalProducts = await product.countDocuments({
+            seller: req.sellerData._id,
+        });
+        const totalPages = Math.ceil(totalProducts / limitNumber);
+
+        const { sellerData } = req;
+        const allProducts = await product.find({
+            seller: sellerData._id,
+        })
+        .populate("category subCategory")
+        .select("-__v -createdAt -updatedAt")
+        .skip(skip)
+        .limit(limitNumber)
+        .sort({ createdAt: -1 })
+        .exec();
+
+        if(!allProducts){
+            return res.status(400).json({
+                status: "failed",
+                message: "No products found",
+            });
+        }
+
+        return res.status(200).json({
+            status: "success",
+            message: "Products fetched successfully",
+            data: allProducts,
+            meta: {
+                totalProducts: totalProducts,
+                totalPages: totalPages,
+                currentPage: pageNumber,
+                limit: limitNumber,
+                more: pageNumber < totalPages,
+            },
+        });
+
+        
+    } catch (error) {
+        next(error);
+    }
+}
+    

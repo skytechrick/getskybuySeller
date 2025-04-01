@@ -105,14 +105,19 @@ const productSchema = new mongoose.Schema({
         default: false,
     },
 
+    isSubmited: {
+        type: Boolean,
+        default: false,
+    },
     isVerifiedByAssistant: {
         type: Boolean,
         default: false,
     },
     isAvailable: {
         type: Boolean,
-        default: true,
+        default: false,
     },
+
 
     media: {
         images: {
