@@ -268,4 +268,41 @@ export const getAllProducts = async ( req , res , next ) => {
         next(error);
     }
 }
-    
+
+export const productSubmit = async ( req , res , next ) => {
+    try {
+
+        const { id } = req.params;
+        const { sellerData } = req;
+
+        const productData = await product.findOne({
+            _id: id,
+            seller: sellerData._id,
+        })
+
+        if(!productData){
+            return res.status(400).json({
+                status: "failed",
+                message: "Product not found",
+            });
+        }
+
+        if(productData.isSubmited === true){
+            return res.status(400).json({
+                status: "failed",
+                message: "Product already submitted",
+            });
+        }
+
+        productData.isSubmited = true;
+        await productData.save();
+        
+        return res.status(200).json({
+            status: "success",
+            message: "Product submitted for review successfully",
+        });
+        
+    } catch (error) {
+        next(error);
+    }
+}
