@@ -406,3 +406,130 @@ export const updateProduct = async ( req , res , next ) => {
         next(error);
     }
 }
+
+export const updateProductImage = async ( req , res , next ) => {
+    try {
+
+        const deleteFiles = async () => {
+            const images = req.processedImages.map(e=> e.image);
+
+            await Promise.all(
+                images.map(e => fs.unlinkSync(path.join(process.cwd(), './public/converted-product-images', e)))
+            );
+        };
+
+        const { sellerData } = req;
+        const { id } = req.params;
+
+        const productData = await product.findOne({
+            _id: id,
+            seller: sellerData._id,
+        }).exec();
+
+        if (!productData) {
+            await deleteFiles();
+            return res.status(404).json({
+                status: "fail",
+                message: "Product not found or already verified",
+            });
+        }
+        const images = req.processedImages.map(e=> e.image);
+
+        if(images.length === 0){
+            await deleteFiles();
+            return res.status(400).json({
+                status: "fail",
+                message: "No images found",
+            });
+        }
+
+        if(productData.media.images.length + images.length > 7){
+            await deleteFiles();
+            return res.status(400).json({
+                status: "fail",
+                message: "Product cannot have more than 7 images",
+            });
+        }
+
+        productData.media.images = [...productData.media.images, ...images];
+        productData.isSubmited = true;
+        productData.isVerifiedByAssistant = false;
+        productData.isAvailable = false;
+        await productData.save();
+        
+        return res.status(200).json({
+            status: "success",
+            message: "Product images updated successfully",
+            image: images[0],
+        });
+        
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const updateProductDeleteImage = async ( req , res , next ) => {
+    try {
+
+        const { sellerData } = req;
+
+        const { id } = req.params;
+
+        const productData = await product.findOne({
+            _id: id,
+            seller: sellerData._id,
+        }).exec();
+
+        if (!productData) {
+            return res.status(404).json({
+                status: "fail",
+                message: "Product not found or already verified",
+            });
+        }
+
+        const image = req.body.image;
+
+        if(!image){
+            return res.status(400).json({
+                status: "fail",
+                message: "Image not found",
+            });
+        }
+
+        if(productData.media.images.length === 1){
+            return res.status(400).json({
+                status: "fail",
+                message: "Product must have at least one image",
+            });
+        }
+
+        const isExist = productData.media.images.find(e => e === image);
+
+        if(!isExist){
+            return res.status(400).json({
+                status: "fail",
+                message: "Image not found in product",
+            });
+        }
+        productData.media.images = productData.media.images.filter(e => e !== image);
+        productData.isSubmited = true;
+        productData.isVerifiedByAssistant = false;
+        productData.isAvailable = false;
+        
+        try {
+            fs.unlinkSync(path.join(process.cwd(), './public/converted-product-images', image));
+        } catch (error) {
+            
+        }
+
+        await productData.save();
+        
+        return res.status(200).json({
+            status: "success",
+            message: "Image deleted successfully",
+        });
+        
+    } catch (error) {
+        
+    }
+}

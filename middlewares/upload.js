@@ -118,3 +118,7 @@ export const uploadProductImage = uploadProductImages.fields([
     { name: 'image6', maxCount: 1 },
     { name: 'image7', maxCount: 1 },
 ]);
+
+export const uploadUpdateProductImage = uploadProductImages.fields([
+    { name: 'image1', maxCount: 1 },
+]);
