@@ -4,7 +4,8 @@ import helmet from "helmet";
 const securityMiddleware = (app) => {
     app.use(cors({
         origin: [
-            "*",
+            "http://192.168.0.12:5173",
+            "https://getskybuy-react-seller.vercel.app",
         ],
         credentials: true,
         optionsSuccessStatus: 200,
