@@ -2,10 +2,10 @@ import { Router } from 'express';
 const authRouter = Router();
 export default authRouter;
 
-import { signup , signupVerifyOtp , onboardingLogin , login , loginVerifyOtp } from '../controllers/authController.js';
+import { register , verifyOtp , onboardingLogin , login , loginVerifyOtp } from '../controllers/authController.js';
 
-authRouter.post("/signup", signup );
-authRouter.post("/signup-verify-otp", signupVerifyOtp );
+authRouter.post("/register", register );
+authRouter.post("/verify-otp", verifyOtp );
 authRouter.post("/onboarding/login" , onboardingLogin );
 authRouter.post("/login" , login );
 authRouter.post("/login-verify-otp" , loginVerifyOtp);

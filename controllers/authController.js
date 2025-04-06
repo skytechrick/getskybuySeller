@@ -7,7 +7,7 @@ import { sendEmail } from "../utils/sendMail.js";
 import { createToken , verifyToken } from "../utils/jwt.js";
 import crypto from "crypto";
 
-export const signup = async ( req , res , next ) => {
+export const register = async ( req , res , next ) => {
     try {
 
         const validatedData = newSignupSchema.safeParse(req.body);
@@ -99,7 +99,7 @@ export const signup = async ( req , res , next ) => {
     }
 }
 
-export const signupVerifyOtp = async ( req , res , next ) => {
+export const verifyOtp = async ( req , res , next ) => {
     try {
 
         let otp = req.body.otp;
