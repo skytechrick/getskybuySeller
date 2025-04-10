@@ -317,7 +317,7 @@ export const onboardingLogin = async ( req , res , next ) => {
             });
         }
 
-        if( comparePassword(password, newSeller.password) === false ) {
+        if(!await comparePassword(password, newSeller.password)) {
             newSeller.loggedIn.loginAttempts += 1;
             await newSeller.save();
             return res.status(401).json({

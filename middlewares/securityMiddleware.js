@@ -9,10 +9,9 @@ const securityMiddleware = (app) => {
         ],
         credentials: true,
         optionsSuccessStatus: 200,
-        methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+        methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
         allowedHeaders: ["Content-Type", "Authorization", "X-Client-App"],
         exposedHeaders: ["Content-Length", "X-Knowledge-Base"],
-        preflightContinue: true,
     }));
 
     app.use(helmet({
