@@ -5,6 +5,7 @@ const securityMiddleware = (app) => {
     app.use(cors({
         origin: [
             "http://192.168.0.12:5173",
+            "http://192.168.0.44:5173",
             "https://getskybuy-react-seller.vercel.app",
         ],
         credentials: true,
@@ -21,7 +22,7 @@ const securityMiddleware = (app) => {
                 scriptSrc: ["'self'", "'unsafe-inline'"],
                 styleSrc: ["'self'", "'unsafe-inline'"],
                 scriptSrcAttr: ["'self'", "'unsafe-inline'"],
-                imgSrc: ["'self'", "data:"],
+                imgSrc: ["'self'", "data:", "blob:", "http://192.168.0.44:5173" , "http://192.168.0.44:81"],
             }
         },
         frameguard: {

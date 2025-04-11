@@ -1,6 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
+import path from 'path';
 import securityMiddleware from './middlewares/securityMiddleware.js';
 import dbConfig from './config/dbConfig.js';
 import accessHandleMiddlerware from './middlewares/accessHandleMiddleware.js';
@@ -16,6 +17,7 @@ app.use(accessHandleMiddlerware);
 securityMiddleware(app);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use("/profile-images", express.static(path.join(process.cwd(), "/public/converted-profile-images" )));
 
 app.use('/api', ( req, res , next ) => {
     req.isApi = true;

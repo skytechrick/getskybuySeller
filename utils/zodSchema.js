@@ -10,15 +10,17 @@ export const newSignupSchema = z.object({
 
 export const loginSchema = z.object({
     email: z.string({ required_error: "Email is required" })
-        .nonempty("Email cann't be empty")
-        .email("Please enter a correct Email")
-        .transform(v => v.toLowerCase()),
+    .nonempty("Email cann't be empty")
+    .email("Please enter a correct Email")
+    .transform(v => v.toLowerCase()),
     password: z.string({ required_error: "Password is required" })
-        .nonempty("password is required")
-        .min(8, "Password must be at least 8 characters")
+    .nonempty("password is required")
+    .min(8, "Password must be at least 8 characters")
 });
 
 export const profileCompletionSchema = z.object({
+    name: z.string({ required_error: "Name is required" }).min(2, 'Name must be at least 2 characters long').optional(),
+    mobileNumber: z.string({ required_error: 'Mobile number is required' }).regex(/^\d{10}$/, 'Mobile number must be 10 digits long').optional(),
     altMobileNumber: z.string()
         .min(10, "Enter correct alt. mobile number")
         .max(10, "Enter correct alt. mobile number")

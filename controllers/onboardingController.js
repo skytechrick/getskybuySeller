@@ -28,6 +28,13 @@ export const onboardingStatus = async ( req , res , next ) => {
 export const profileCompletion = async ( req , res , next ) => {
     try {
 
+        const deleteFile = async () => {
+            const images = req.processedImages.map(e=> e.image);
+            await Promise.all(
+                images.map(e => fs.unlinkSync(path.join(process.cwd(), './public/converted-profile-images', e)))
+            );
+        };
+
         const processedImages = req.processedImages || [];
         let fileName = undefined;
         if (processedImages.length !== 0) {
@@ -37,7 +44,7 @@ export const profileCompletion = async ( req , res , next ) => {
         const validatedData = profileCompletionSchema.safeParse(req.body);
 
         if (!validatedData.success) {
-            console.log("validatedData.error", validatedData.error);
+            await deleteFile();
             return res.status(400).json({
                 status: "failed",
                 message: validatedData.error.issues.map((issue) => issue.message).join(", "),
@@ -49,9 +56,10 @@ export const profileCompletion = async ( req , res , next ) => {
         const addressValidatedData = addressSchema.safeParse(validatedData.data.address);
 
         if (!addressValidatedData.success) {
+            await deleteFile();
             return res.status(400).json({
                 status: "failed",
-                message: "Address:" + addressValidatedData.error.issues.map((issue) => issue.message).join(", "),
+                message: "Address: " + addressValidatedData.error.issues.map((issue) => issue.message).join(", "),
             });
         }
 
@@ -60,6 +68,7 @@ export const profileCompletion = async ( req , res , next ) => {
         const newSellerData = await newSeller.findById(onboarder._id);
 
         if (!newSellerData) {
+            await deleteFile();
             return res.status(404).json({
                 status:"failed",
                 message: "User not found"
@@ -69,7 +78,9 @@ export const profileCompletion = async ( req , res , next ) => {
         const {
             altMobileNumber = undefined,
             dob,
-            gender
+            gender,
+            name = undefined,
+            mobileNumber = undefined,
         } = validatedData.data;
 
         const checkExistingProfileImage = newSellerData.profileImage;
@@ -83,6 +94,7 @@ export const profileCompletion = async ( req , res , next ) => {
                     fs.unlinkSync(filePath);
                 }
             } catch (error) {
+                await deleteFile();
                 return res.status(500).json({
                     status: "failed",
                     message: "Error deleting old profile image",
@@ -95,10 +107,13 @@ export const profileCompletion = async ( req , res , next ) => {
         }        
         newSellerData.process.profileCompletion = true;
         newSellerData.personalDetails.altMobileNumber = altMobileNumber;
-        newSellerData.personalDetails.dob = dob;
+        newSellerData.personalDetails.dob = new Date(dob);
         newSellerData.personalDetails.gender = gender;
+        newSellerData.personalDetails.name = name;
+        newSellerData.personalDetails.mobileNumber = mobileNumber;
         newSellerData.address = addressValidatedData.data;
 
+        await newSellerData.save();
 
         return res.status(200).json({
             status: "success",
@@ -106,6 +121,10 @@ export const profileCompletion = async ( req , res , next ) => {
         });
 
     } catch (error) {
+        const images = req.processedImages.map(e=> e.image);
+        await Promise.all(
+            images.map(e => fs.unlinkSync(path.join(process.cwd(), './public/converted-profile-images', e)))
+        );
         next(error);
     }
 }
