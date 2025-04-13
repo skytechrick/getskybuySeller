@@ -59,10 +59,10 @@ export const businessInformationSchema = z.object({
         .min(10, "Enter correct business mobile number")
         .max(10, "Enter correct business mobile number")
         .optional(),
-    businessName: z.string({ required_error: "Business name is required" })
+    name: z.string({ required_error: "Business name is required" })
         .min(3, "Business name must be at least 3 characters" )
         .max(255 , "Business name must be at most 255 characters" ),
-    businessType: z.string({ required_error: "Business type is required" })
+    type: z.string({ required_error: "Business type is required" })
         .min(3, "Business type must be at least 3 characters" )
         .max(255 , "Business type must be at most 255 characters" ),
     description: z.string({ required_error: "Description is required" })

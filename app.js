@@ -18,6 +18,7 @@ securityMiddleware(app);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use("/profile-images", express.static(path.join(process.cwd(), "/public/converted-profile-images" )));
+app.use("/business-images", express.static(path.join(process.cwd(), "/public/converted-business-images" )));
 
 app.use('/api', ( req, res , next ) => {
     req.isApi = true;

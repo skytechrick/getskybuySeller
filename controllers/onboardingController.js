@@ -154,6 +154,7 @@ export const businessInformation = async ( req , res , next ) => {
 
         const addressValidatedData = addressSchema.safeParse(validatedData.data.address);
         if (!addressValidatedData.success) {
+            console.log(addressValidatedData.error.issues);
             await deleteFiles();
             return res.status(400).json({
                 status: "failed",
@@ -290,9 +291,9 @@ export const businessInformation = async ( req , res , next ) => {
         
 
         const {
-            businessName,
-            businessType,
-            gstin,
+            name,
+            type,
+            gstin = undefined,
             panCard,
             aadhaarCard,
             description,
@@ -303,10 +304,10 @@ export const businessInformation = async ( req , res , next ) => {
         newSellerData.categories = categories,
         newSellerData.businessInfo = {
             businessMobileNumber,
-            name: businessName,
-            type: businessType,
+            name,
+            type,
             description,
-            gstin: gstin,
+            gstin,
             panCard,
             aadhaarCard,
             panFile,
